@@ -1,12 +1,14 @@
 use crate::prelude::*;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(PartialEq, Eq, Debug, Clone, Copy, Hash)]
 pub enum TurnState {
-    Setup,
-    AwaitingInput,
-    PlayerTurn,
-    MonsterTurn,
-    GameOver,
+    Start,
+    WaitingForInput,
+    // PlayerTurn,
+    // AITurn,
+    GameOverLeft,
+    Ticking,
+    // Modal(&'a str, &'a str),
 }
 
 #[derive(Debug, Clone, Eq, PartialEq, Hash, StageLabel)]

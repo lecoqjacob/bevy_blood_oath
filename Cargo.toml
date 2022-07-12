@@ -14,15 +14,21 @@ codegen-units = 1
 lto = true
 
 [dependencies]
-bevy = {git = "https://github.com/bevyengine/bevy", default-features = false, features = ["dynamic"]}
+bevy = { git = "https://github.com/bevyengine/bevy", default-features = false, features = [
+  "dynamic",
+] }
 
-bracket-bevy = {git = "https://github.com/amethyst/bracket-lib", branch = "bevy"}
-bracket-geometry = {git = "https://github.com/amethyst/bracket-lib", branch = "bevy"}
-bracket-pathfinding = {git = "https://github.com/amethyst/bracket-lib", branch = "bevy"}
+bracket-bevy = { git = "https://github.com/amethyst/bracket-lib", branch = "bevy" }
+bracket-geometry = { git = "https://github.com/amethyst/bracket-lib", branch = "bevy" }
+bracket-pathfinding = { git = "https://github.com/amethyst/bracket-lib", branch = "bevy" }
+bracket-noise = { git = "https://github.com/amethyst/bracket-lib", branch = "bevy" }
+bracket-random = { git = "https://github.com/amethyst/bracket-lib", branch = "bevy" }
+bracket-embedding = { git = "https://github.com/amethyst/bracket-lib", branch = "bevy" }
 
-iyes_loopless = {git = 'https://github.com/lecoqjacob/iyes_loopless', branch = "bevy_main"}
+iyes_loopless = { git = 'https://github.com/lecoqjacob/iyes_loopless', branch = "bevy_main" }
 
 lazy_static = "1.4.0"
+parking_lot = "0.12.1"
 
 [build-dependencies]
 embed-resource = "1.7.3"

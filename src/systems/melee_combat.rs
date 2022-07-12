@@ -35,7 +35,6 @@ pub fn combat(
                             .append("hp.")
                             .log();
 
-
                         if let Some(events) = events.get_mut(victim) {
                             events.amount += damage;
                         } else {

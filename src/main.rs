@@ -1,36 +1,73 @@
-mod resources;
-mod map;
+#![allow(clippy::type_complexity)]
+#![allow(clippy::too_many_arguments)]
+#![feature(decl_macro)]
+#![feature(auto_traits)]
+
+#[macro_use]
+extern crate lazy_static;
+
+mod camera;
+mod components;
+mod event;
 mod gamelog;
+mod map;
+mod resources;
+mod rng;
+mod spawner;
+mod systems;
+mod utils;
 
 mod prelude {
     pub use bevy::prelude::*;
+
     pub use bracket_bevy::prelude::*;
+    pub use bracket_bevy::FontCharType;
+    pub use bracket_noise::prelude::*;
     pub use bracket_pathfinding::prelude::*;
+    pub use bracket_random::prelude::*;
+
     pub use iyes_loopless::prelude::*;
 
-    pub use bracket_bevy::FontCharType;
-
-    pub use crate::resources::*;
-    pub use crate::map::*;
+    pub use crate::camera::*;
+    pub use crate::components::*;
+    pub use crate::event::*;
     pub use crate::gamelog::*;
+    pub use crate::map::*;
+    pub use crate::resources::*;
+    pub use crate::rng::*;
+    pub use crate::spawner::*;
+    pub use crate::systems::*;
+    pub use crate::utils::*;
 
     pub const MAPWIDTH: usize = 80;
     pub const MAPHEIGHT: usize = 43;
     pub const MAPCOUNT: usize = (MAPHEIGHT * MAPWIDTH) as usize;
+
+    pub const LAYER_MAP: usize = 0;
+    pub const LAYER_DECOR: usize = 1;
+    pub const LAYER_ITEMS: usize = 2;
+    pub const LAYER_CHR: usize = 3;
+    pub const LAYER_TEXT: usize = 4;
 }
 
-use prelude::*;
+pub use prelude::*;
+use GameStage::*;
 
 fn main() {
     let mut app = App::new();
 
+    // In Bevy, it's necessary to register the event types.
+    app.add_event::<WantsToMove>()
+        .add_event::<WantsToAttack>()
+        .add_event::<SufferDamage>();
+
     // Set the additional stages
     app.add_stage_after(CoreStage::Update, Render, SystemStage::parallel())
-        .add_stage_after(Render, CameraMove, SystemStage::parallel());
+        .add_stage_after(CoreStage::PostUpdate, CameraMove, SystemStage::parallel());
 
-        let bterm = BTermBuilder::empty()
+    let bterm = BTermBuilder::empty()
         .with_random_number_generator(true)
-        .with_font("font.png", 16, 16, (8.0, 8.0)) // Load big font
+        .with_font("font-transparent.png", 16, 16, (8.0, 8.0)) // Load big font
         .with_font("vga.png", 16, 16, (8.0, 16.0)) // Load easy-to-read font
         // Console 0: Base map
         .with_simple_console(0, 56, 31)
@@ -49,31 +86,24 @@ fn main() {
         .with_background(true);
 
     // Add Plugins
-    app.add_loopless_state(TurnState::Setup)
-        .add_plugins(DefaultPlugins)
+    app.add_plugins(DefaultPlugins)
         .add_plugin(bterm)
+        .add_plugin(MapPlugin)
         .add_plugin(SpawnerPlugin)
         .add_plugin(SystemsPlugin);
 
-     // Setup Game
-    app.add_startup_system(setup)
-        .add_system(tick)
-        .add_system(exit_system)
-        .run();
+    app.insert_resource(TurnState::Start);
+
+    // Setup Game
+    app.add_system(tick).add_system(exit_system).run();
 }
 
-fn setup(mut commands: Commands, rng: Res<RandomNumbers>) {
-    let map = Map::new_map_rooms_and_corridors(&rng);
-    commands.insert_resource(map);
-}
-
-fn tick(mut commands: Commands, turn_state: Res<CurrentState<TurnState>>) {
-    match turn_state.0 {
-        TurnState::Setup => commands.insert_resource(NextState(TurnState::AwaitingInput)),
-        TurnState::PlayerTurn => commands.insert_resource(NextState(TurnState::MonsterTurn)),
-        TurnState::MonsterTurn => commands.insert_resource(NextState(TurnState::AwaitingInput)),
-        TurnState::AwaitingInput => {}
-        TurnState::GameOver => {}
+fn tick(mut commands: Commands, turn_state: Res<TurnState>) {
+    match *turn_state {
+        TurnState::Start => commands.insert_resource(TurnState::WaitingForInput),
+        TurnState::Ticking => commands.insert_resource(TurnState::WaitingForInput),
+        TurnState::WaitingForInput => {}
+        TurnState::GameOverLeft => {}
     }
 }
 

@@ -1,23 +1,18 @@
 use crate::prelude::*;
 
-mod camera;
-mod damage;
 mod fov;
-mod map_indexing;
-mod melee_combat;
-mod monster_ai;
 mod player_input;
-mod render;
+mod random_move;
 
-use GameStage::*;
-use TurnState::*;
+mod render;
+use render::*;
 
 struct AwaitingInputPlugin;
 impl Plugin for AwaitingInputPlugin {
     fn build(&self, app: &mut App) {
         app.add_system_set(
             ConditionSet::new()
-                .run_in_state(AwaitingInput)
+                .run_if_resource_equals(TurnState::WaitingForInput)
                 .with_system(player_input::player_input_system)
                 .with_system(fov::fov)
                 .into(),
@@ -25,26 +20,14 @@ impl Plugin for AwaitingInputPlugin {
     }
 }
 
-struct PlayerPlugin;
-impl Plugin for PlayerPlugin {
+struct TickingPlugin;
+impl Plugin for TickingPlugin {
     fn build(&self, app: &mut App) {
         app.add_system_set(
             ConditionSet::new()
-                .run_in_state(PlayerTurn)
+                .run_if_resource_equals(TurnState::Ticking)
+                .with_system(random_move::random_move)
                 .with_system(fov::fov)
-                .into(),
-        );
-    }
-}
-
-struct MonsterPlugin;
-impl Plugin for MonsterPlugin {
-    fn build(&self, app: &mut App) {
-        app.add_system_set(
-            ConditionSet::new()
-                .run_in_state(MonsterTurn)
-                .with_system(fov::fov)
-                .with_system(monster_ai::monster_ai)
                 .into(),
         );
     }
@@ -53,35 +36,18 @@ impl Plugin for MonsterPlugin {
 pub struct SystemsPlugin;
 impl Plugin for SystemsPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system_set_to_stage(
-            GameStage::Render,
-            ConditionSet::new()
-                .with_system(render::render_map)
-                .with_system(render::render_entities)
-                .with_system(render::render_ui)
-                .with_system(render::render_tooltips)
-                .into(),
-        );
-
-        app.add_system_set_to_stage(
-            GameStage::CameraMove,
-            ConditionSet::new()
-                .with_system(camera::camera_follow)
-                .into(),
-        );
+        app.add_plugin(RenderPlugin);
 
         // Every Turn Systems
         app.add_system_set(
             ConditionSet::new()
-                .with_system(map_indexing::map_indexing)
-                .with_system(melee_combat::combat)
-                .with_system(damage::damage_system)
-                .with_system(damage::delete_the_dead)
+                // .with_system(melee_combat::combat)
+                // .with_system(damage::damage_system)
+                // .with_system(damage::delete_the_dead)
                 .into(),
         );
 
         app.add_plugin(AwaitingInputPlugin)
-            .add_plugin(PlayerPlugin)
-            .add_plugin(MonsterPlugin);
+            .add_plugin(TickingPlugin);
     }
 }
