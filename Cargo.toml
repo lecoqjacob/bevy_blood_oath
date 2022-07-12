@@ -1,0 +1,31 @@
+[package]
+edition = "2021"
+name = "bevy_blood_oath"
+version = "0.1.0"
+
+[profile.dev.package."*"]
+opt-level = 3
+
+[profile.dev]
+opt-level = 1
+
+[profile.release]
+codegen-units = 1
+lto = true
+
+[dependencies]
+bevy = {git = "https://github.com/bevyengine/bevy", default-features = false, features = ["dynamic"]}
+
+bracket-bevy = {git = "https://github.com/amethyst/bracket-lib", branch = "bevy"}
+bracket-geometry = {git = "https://github.com/amethyst/bracket-lib", branch = "bevy"}
+bracket-pathfinding = {git = "https://github.com/amethyst/bracket-lib", branch = "bevy"}
+
+iyes_loopless = {git = 'https://github.com/lecoqjacob/iyes_loopless', branch = "bevy_main"}
+
+lazy_static = "1.4.0"
+
+[build-dependencies]
+embed-resource = "1.7.3"
+
+[workspace]
+resolver = "2" # Important! wgpu/Bevy needs this!
