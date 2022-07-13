@@ -16,7 +16,7 @@ pub fn spawn_player(mut commands: Commands, map: Res<Map>) {
         Naming("SecBot".to_string())
     );
 
-    // commands.insert_resource(GameCamera::new(start));
+    commands.insert_resource(GameCamera::new(start));
 }
 
 pub struct SpawnerPlugin;

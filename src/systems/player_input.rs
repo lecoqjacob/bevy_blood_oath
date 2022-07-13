@@ -8,11 +8,10 @@ pub fn player_input_system(
     doors: Query<(Entity, &Position), (With<Door>, Without<Player>)>,
     // mut attack_events: EventWriter<WantsToAttack>,
     mut keyboard_input: ResMut<Input<KeyCode>>,
-    // mut camera: ResMut<GameCamera>,
+    mut camera: ResMut<GameCamera>,
 ) {
     let key = keyboard_input.get_pressed().next().cloned();
     if let Some(key) = key {
-        let mut result = TurnState::WaitingForInput;
         let mut doors_to_delete = HashSet::new();
 
         let delta = match key {
@@ -38,8 +37,7 @@ pub fn player_input_system(
             if !map.get_current().tiles[new_idx].blocked {
                 pos.pt = new_pos;
                 player_fov.is_dirty = true;
-                result = TurnState::Ticking;
-                // camera.on_player_move(pos.pt);
+                camera.on_player_move(pos.pt)
             } else if map.get_current().is_door[new_idx] {
                 map.get_current_mut().open_door(new_idx);
                 doors_to_delete.insert(map.get_current().index_to_point2d(new_idx));
@@ -56,6 +54,6 @@ pub fn player_input_system(
 
         // reset keyboard, bevys bug when changing states
         keyboard_input.reset(key);
-        commands.insert_resource(result);
+        commands.insert_resource(TurnState::Ticking);
     }
 }

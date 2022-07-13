@@ -13,7 +13,8 @@ pub fn random_move(
             _ => Point::new(0, 1),
         } + pos.pt;
 
-        if map.get_current().in_bounds(destination) {
+        let new_idx = map.get_current().point2d_to_index(destination);
+        if map.get_current().in_bounds(destination) && !map.get_current().tiles[new_idx].blocked {
             pos.pt = destination;
         }
     }

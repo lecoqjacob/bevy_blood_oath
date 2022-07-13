@@ -36,52 +36,8 @@ impl Plugin for TickingPlugin {
 pub struct SystemsPlugin;
 impl Plugin for SystemsPlugin {
     fn build(&self, app: &mut App) {
-        // app.add_plugin(RenderPlugin);
-
-        // // Every Turn Systems
-        // app.add_system_set(
-        //     ConditionSet::new()
-        //         .with_system(render_camera.at_end())
-        //         // .with_system(melee_combat::combat)
-        //         // .with_system(damage::damage_system)
-        //         // .with_system(damage::delete_the_dead)
-        //         .into(),
-        // );
-
-        app.add_system_set(
-            ConditionSet::new()
-                .run_if_resource_equals(TurnState::Cleanup)
-                .with_system(render_camera)
-                .into(),
-        );
-
-        // app.add_system(render_camera.exclusive_system().at_end());
-        // app.add_system_to_stage(GameStage::Render, render_camera.exclusive_system().at_end());
-
-        // app.add_system_to_stage(GameStage::CameraMove, camera);
-
         app.add_plugin(AwaitingInputPlugin)
-            .add_plugin(TickingPlugin);
+            .add_plugin(TickingPlugin)
+            .add_plugin(RenderPlugin);
     }
-}
-
-fn render_camera(
-    map: Res<Map>,
-    ctx: Res<BracketContext>,
-    p_q: Query<&Position, With<Player>>,
-    glyphs: Query<(&Position, &Glyph)>,
-) {
-    if p_q.is_empty() {
-        return;
-    }
-
-    dbg!("camera move");
-
-    let camera = GameCamera::new(p_q.single().pt);
-
-    let mut gui_batch = ctx.new_draw_batch();
-    ctx.submit_batch(50_000, gui_batch);
-
-    camera.render_map(&map, &ctx);
-    camera.render_glyphs(&map, &ctx, glyphs);
 }

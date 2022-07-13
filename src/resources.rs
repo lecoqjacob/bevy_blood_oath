@@ -4,11 +4,8 @@ use crate::prelude::*;
 pub enum TurnState {
     Start,
     WaitingForInput,
-    // PlayerTurn,
-    // AITurn,
-    GameOverLeft,
     Ticking,
-    Cleanup,
+    GameOverLeft,
     // Modal(&'a str, &'a str),
 }
 
