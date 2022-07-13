@@ -4,11 +4,11 @@ use std::collections::HashSet;
 pub fn player_input_system(
     mut map: ResMut<Map>,
     mut commands: Commands,
-    mut player_query: Query<(&mut Position, &mut FieldOfView), (With<Player>, Without<Door>)>,
-    doors: Query<(Entity, &Position), (With<Door>, Without<Player>)>,
-    // mut attack_events: EventWriter<WantsToAttack>,
+    player_query: Query<(Entity, &Position), (With<Player>, Without<Door>)>,
+    // doors: Query<(Entity, &Position), (With<Door>, Without<Player>)>,
     mut keyboard_input: ResMut<Input<KeyCode>>,
-    mut camera: ResMut<GameCamera>,
+    // mut camera: ResMut<GameCamera>,
+    mut move_events: EventWriter<WantsToMove>,
 ) {
     let key = keyboard_input.get_pressed().next().cloned();
     if let Some(key) = key {
@@ -28,32 +28,34 @@ pub fn player_input_system(
             _ => Point::new(0, 0),
         };
 
-        let (mut pos, mut player_fov) = player_query.single_mut();
+        println!("{:?}", player_query.iter().collect::<Vec<_>>().len());
+        let (player_entity, pos) = player_query.single();
 
         if delta.x != 0 || delta.y != 0 {
             let new_pos = pos.pt + delta;
             let new_idx = map.get_current().point2d_to_index(new_pos);
 
             if !map.get_current().tiles[new_idx].blocked {
-                pos.pt = new_pos;
-                player_fov.is_dirty = true;
-                camera.on_player_move(pos.pt)
+                move_events.send(WantsToMove {
+                    entity: player_entity,
+                    destination: new_pos,
+                });
             } else if map.get_current().is_door[new_idx] {
                 map.get_current_mut().open_door(new_idx);
                 doors_to_delete.insert(map.get_current().index_to_point2d(new_idx));
             }
 
-            if !doors_to_delete.is_empty() {
-                doors.iter().for_each(|(entity, pos)| {
-                    if pos.layer == map.current_layer && doors_to_delete.contains(&pos.pt) {
-                        commands.entity(entity).despawn_recursive();
-                    }
-                });
-            }
+            // if !doors_to_delete.is_empty() {
+            //     doors.iter().for_each(|(entity, pos)| {
+            //         if pos.layer == map.current_layer && doors_to_delete.contains(&pos.pt) {
+            //             commands.entity(entity).despawn_recursive();
+            //         }
+            //     });
+            // }
         }
 
         // reset keyboard, bevys bug when changing states
         keyboard_input.reset(key);
-        commands.insert_resource(TurnState::Ticking);
+        commands.insert_resource(TurnState::PlayerTurn);
     }
 }

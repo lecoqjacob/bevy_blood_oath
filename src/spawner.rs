@@ -1,6 +1,6 @@
 use crate::prelude::*;
 
-pub fn spawn_player(mut commands: Commands, map: Res<Map>) {
+pub fn spawn_player(mut commands: Commands, map: Res<Map>, mut state: ResMut<TurnState>) {
     let start = map.get_current().starting_point;
 
     crate::utils::spawn_entity!(
@@ -24,7 +24,7 @@ impl Plugin for SpawnerPlugin {
     fn build(&self, app: &mut App) {
         app.add_system_set(
             ConditionSet::new()
-                .run_if_resource_equals(TurnState::Start)
+                .run_if_resource_added::<TurnState>()
                 .with_system(spawn_player)
                 .into(),
         );

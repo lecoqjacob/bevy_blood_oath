@@ -62,6 +62,14 @@ fn main() {
         .add_event::<SufferDamage>();
 
     // Set the additional stages
+    app.add_stage_after(CoreStage::Update, PlayerCombat, SystemStage::parallel())
+        .add_stage_after(PlayerCombat, MovePlayer, SystemStage::parallel())
+        .add_stage_after(MovePlayer, PlayerFov, SystemStage::parallel())
+        .add_stage_after(PlayerFov, GenerateMonsterMoves, SystemStage::parallel())
+        .add_stage_after(GenerateMonsterMoves, MonsterCombat, SystemStage::parallel())
+        .add_stage_after(MonsterCombat, MoveMonsters, SystemStage::parallel())
+        .add_stage_after(MoveMonsters, MonsterFov, SystemStage::parallel());
+
     app.add_stage_after(CoreStage::Update, Render, SystemStage::parallel());
 
     let bterm = BTermBuilder::empty()
@@ -94,16 +102,7 @@ fn main() {
     app.insert_resource(TurnState::Start);
 
     // Setup Game
-    app.add_system(tick).add_system(exit_system).run();
-}
-
-fn tick(mut commands: Commands, turn_state: Res<TurnState>) {
-    match *turn_state {
-        TurnState::Start => commands.insert_resource(TurnState::WaitingForInput),
-        TurnState::Ticking => commands.insert_resource(TurnState::WaitingForInput),
-        TurnState::WaitingForInput => {}
-        TurnState::GameOverLeft => {}
-    }
+    app.add_system(exit_system).run();
 }
 
 fn exit_system(mut exit: EventWriter<bevy::app::AppExit>, input: Res<Input<KeyCode>>) {

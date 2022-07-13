@@ -15,7 +15,7 @@ impl Plugin for RenderPlugin {
         app.add_system_set_to_stage(
             GameStage::Render,
             ConditionSet::new()
-                .run_if_resource_equals(TurnState::Ticking)
+                .run_if_resource_equals(TurnState::PlayerTurn)
                 .with_system(render_map)
                 .with_system(render_glyphs)
                 .into(),
@@ -26,7 +26,7 @@ impl Plugin for RenderPlugin {
 }
 
 fn run_if_state_ticking(state: Res<TurnState>) -> ShouldRun {
-    if *state == TurnState::Ticking {
+    if *state == TurnState::PlayerTurn {
         ShouldRun::Yes
     } else {
         ShouldRun::No
