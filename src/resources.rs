@@ -8,6 +8,7 @@ pub enum TurnState {
     // AITurn,
     GameOverLeft,
     Ticking,
+    Cleanup,
     // Modal(&'a str, &'a str),
 }
 

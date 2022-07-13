@@ -62,8 +62,12 @@ fn main() {
         .add_event::<SufferDamage>();
 
     // Set the additional stages
-    app.add_stage_after(CoreStage::Update, Render, SystemStage::parallel())
-        .add_stage_after(CoreStage::PostUpdate, CameraMove, SystemStage::parallel());
+    app.add_stage_after(CoreStage::Update, Render, SystemStage::parallel());
+    // .add_stage_after(
+    //     CoreStage::PostUpdate,
+    //     CameraMove,
+    //     SystemStage::single_threaded(),
+    // );
 
     let bterm = BTermBuilder::empty()
         .with_random_number_generator(true)
@@ -101,7 +105,8 @@ fn main() {
 fn tick(mut commands: Commands, turn_state: Res<TurnState>) {
     match *turn_state {
         TurnState::Start => commands.insert_resource(TurnState::WaitingForInput),
-        TurnState::Ticking => commands.insert_resource(TurnState::WaitingForInput),
+        TurnState::Ticking => commands.insert_resource(TurnState::Cleanup),
+        TurnState::Cleanup => commands.insert_resource(TurnState::WaitingForInput),
         TurnState::WaitingForInput => {}
         TurnState::GameOverLeft => {}
     }
