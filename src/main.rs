@@ -13,7 +13,7 @@ mod gamelog;
 mod map;
 mod resources;
 mod rng;
-mod spawner;
+mod setup;
 mod systems;
 mod utils;
 
@@ -35,7 +35,7 @@ mod prelude {
     pub use crate::map::*;
     pub use crate::resources::*;
     pub use crate::rng::*;
-    pub use crate::spawner::*;
+    pub use crate::setup::*;
     pub use crate::systems::*;
     pub use crate::utils::*;
 
@@ -56,57 +56,57 @@ use GameStage::*;
 fn main() {
     let mut app = App::new();
 
+    app.insert_resource(TurnState::Setup);
+
     // In Bevy, it's necessary to register the event types.
     app.add_event::<WantsToMove>()
         .add_event::<WantsToAttack>()
         .add_event::<SufferDamage>();
 
-    // Set the additional stages
-    app.add_stage_after(CoreStage::Update, PlayerCombat, SystemStage::parallel())
-        .add_stage_after(PlayerCombat, MovePlayer, SystemStage::parallel())
-        .add_stage_after(MovePlayer, PlayerFov, SystemStage::parallel())
-        .add_stage_after(PlayerFov, GenerateMonsterMoves, SystemStage::parallel())
-        .add_stage_after(GenerateMonsterMoves, MonsterCombat, SystemStage::parallel())
-        .add_stage_after(MonsterCombat, MoveMonsters, SystemStage::parallel())
-        .add_stage_after(MoveMonsters, MonsterFov, SystemStage::parallel());
-
-    app.add_stage_after(CoreStage::Update, Render, SystemStage::parallel());
-
-    let bterm = BTermBuilder::empty()
-        .with_random_number_generator(true)
-        .with_font("font-transparent.png", 16, 16, (8.0, 8.0)) // Load big font
-        .with_font("vga.png", 16, 16, (8.0, 16.0)) // Load easy-to-read font
-        // Console 0: Base map
-        .with_simple_console(0, 56, 31)
-        .with_background(true)
-        // Console 1: Decorations
-        .with_sparse_console(0, 56, 31)
-        .with_background(false)
-        // Console 2: Items
-        .with_sparse_console(0, 56, 31)
-        .with_background(false)
-        // Console 3: Characters
-        .with_sparse_console(0, 56, 31)
-        .with_background(false)
-        // Console 4: User Interface
-        .with_sparse_console(1, 112, 31)
-        .with_background(true);
+    app.add_stage_after(CoreStage::Update, PlayerStage, SystemStage::parallel())
+        .add_stage_after(PlayerStage, GenerateAIMoves, SystemStage::parallel())
+        .add_stage_after(GenerateAIMoves, AIStage, SystemStage::parallel());
 
     // Add Plugins
     app.add_plugins(DefaultPlugins)
-        .add_plugin(bterm)
-        .add_plugin(MapPlugin)
+        .add_plugin(BTermPlugin)
+        // .add_plugin(MapPlugin)
         .add_plugin(SpawnerPlugin)
-        .add_plugin(SystemsPlugin);
-
-    app.insert_resource(TurnState::Start);
+        .add_plugins(SystemsPlugins);
 
     // Setup Game
     app.add_system(exit_system).run();
 }
 
 fn exit_system(mut exit: EventWriter<bevy::app::AppExit>, input: Res<Input<KeyCode>>) {
-    if input.just_pressed(KeyCode::Escape) {
+    if input.any_pressed([KeyCode::Escape]) {
         exit.send(bevy::app::AppExit);
+    }
+}
+
+struct BTermPlugin;
+impl Plugin for BTermPlugin {
+    fn build(&self, app: &mut App) {
+        let builder = BTermBuilder::empty()
+            .with_random_number_generator(true)
+            .with_font("font-transparent.png", 16, 16, (8.0, 8.0)) // Load big font
+            .with_font("vga.png", 16, 16, (8.0, 16.0)) // Load easy-to-read font
+            // Console 0: Base map
+            .with_simple_console(0, 56, 31)
+            .with_background(true)
+            // Console 1: Decorations
+            .with_sparse_console(0, 56, 31)
+            .with_background(false)
+            // Console 2: Items
+            .with_sparse_console(0, 56, 31)
+            .with_background(false)
+            // Console 3: Characters
+            .with_sparse_console(0, 56, 31)
+            .with_background(false)
+            // Console 4: User Interface
+            .with_sparse_console(1, 112, 31)
+            .with_background(true);
+
+        app.add_plugin(builder);
     }
 }

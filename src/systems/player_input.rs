@@ -4,11 +4,10 @@ use std::collections::HashSet;
 pub fn player_input_system(
     mut map: ResMut<Map>,
     mut commands: Commands,
-    player_query: Query<(Entity, &Position), (With<Player>, Without<Door>)>,
-    // doors: Query<(Entity, &Position), (With<Door>, Without<Player>)>,
-    mut keyboard_input: ResMut<Input<KeyCode>>,
-    // mut camera: ResMut<GameCamera>,
     mut move_events: EventWriter<WantsToMove>,
+    mut keyboard_input: ResMut<Input<KeyCode>>,
+    player_query: Query<(Entity, &Position), (With<Player>, Without<Door>)>,
+    doors: Query<(Entity, &Position), (With<Door>, Without<Player>)>,
 ) {
     let key = keyboard_input.get_pressed().next().cloned();
     if let Some(key) = key {
@@ -28,7 +27,6 @@ pub fn player_input_system(
             _ => Point::new(0, 0),
         };
 
-        println!("{:?}", player_query.iter().collect::<Vec<_>>().len());
         let (player_entity, pos) = player_query.single();
 
         if delta.x != 0 || delta.y != 0 {
@@ -45,13 +43,13 @@ pub fn player_input_system(
                 doors_to_delete.insert(map.get_current().index_to_point2d(new_idx));
             }
 
-            // if !doors_to_delete.is_empty() {
-            //     doors.iter().for_each(|(entity, pos)| {
-            //         if pos.layer == map.current_layer && doors_to_delete.contains(&pos.pt) {
-            //             commands.entity(entity).despawn_recursive();
-            //         }
-            //     });
-            // }
+            if !doors_to_delete.is_empty() {
+                doors.iter().for_each(|(entity, pos)| {
+                    if pos.layer == map.current_layer && doors_to_delete.contains(&pos.pt) {
+                        commands.entity(entity).despawn_recursive();
+                    }
+                });
+            }
         }
 
         // reset keyboard, bevys bug when changing states

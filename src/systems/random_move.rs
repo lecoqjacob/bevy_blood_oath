@@ -7,6 +7,7 @@ pub fn random_move(
     positions: Query<(Entity, &Position)>,
     player_query: Query<Entity, With<Player>>,
     rng: Res<RandomNumbers>,
+    map: Res<Map>,
 ) {
     movers.iter().for_each(|(entity, pos)| {
         let destination = match rng.range(0, 4) {
@@ -37,7 +38,7 @@ pub fn random_move(
             }
         }
 
-        if !attacked {
+        if !attacked && map.get_current().can_enter_tile(destination) {
             move_events.send(WantsToMove {
                 entity,
                 destination,

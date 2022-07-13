@@ -27,15 +27,3 @@ impl Map {
         &mut self.layers[self.current_layer]
     }
 }
-
-pub fn setup_map(mut commands: Commands) {
-    let map = Map::new(&mut commands);
-    commands.insert_resource(map);
-}
-
-pub struct MapPlugin;
-impl Plugin for MapPlugin {
-    fn build(&self, app: &mut App) {
-        app.add_startup_system(setup_map);
-    }
-}

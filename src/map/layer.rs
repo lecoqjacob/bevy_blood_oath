@@ -41,6 +41,10 @@ impl Layer {
         self.tiles[idx].glyph = to_cp437('.');
     }
 
+    pub fn can_enter_tile(&self, pt: Point) -> bool {
+        self.in_bounds(pt) && !self.tiles[self.point2d_to_index(pt)].blocked
+    }
+
     // Private
     fn test_exit(&self, pt: Point, delta: Point, exits: &mut SmallVec<[(usize, f32); 10]>) {
         let dest_pt = pt + delta;
