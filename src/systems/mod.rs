@@ -36,8 +36,15 @@ impl Plugin for TickingPlugin {
 pub struct SystemsPlugin;
 impl Plugin for SystemsPlugin {
     fn build(&self, app: &mut App) {
+        app.add_system_set(
+            ConditionSet::new()
+                .with_system(render::render_map)
+                .with_system(render::render_glyphs)
+                .into(),
+        );
+
         app.add_plugin(AwaitingInputPlugin)
-            .add_plugin(TickingPlugin)
-            .add_plugin(RenderPlugin);
+            .add_plugin(TickingPlugin);
+        // .add_plugin(RenderPlugin);
     }
 }

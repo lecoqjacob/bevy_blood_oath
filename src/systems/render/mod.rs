@@ -3,10 +3,11 @@ use bevy::ecs::schedule::ShouldRun;
 
 mod gui;
 
+pub mod render_map;
+pub use render_map::*;
+
+pub use render_glyphs::*;
 mod render_glyphs;
-mod render_map;
-use render_glyphs::*;
-use render_map::*;
 
 pub struct RenderPlugin;
 impl Plugin for RenderPlugin {
